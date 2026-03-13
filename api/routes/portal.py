@@ -184,6 +184,7 @@ def _dashboard_html(clinic: dict, leads: list, saved: bool = False, paid: bool =
     faqs         = clinic.get("faqs") or ""
     custom_notes = clinic.get("custom_notes") or ""
     sub_status   = clinic.get("subscription_status") or "inactive"
+    twilio_phone = clinic.get("twilio_phone") or ""
 
     embed = f'&lt;script src="https://web-production-83065.up.railway.app/widget.js?key={widget_key}"&gt;&lt;/script&gt;'
     embed_raw = f'<script src="https://web-production-83065.up.railway.app/widget.js?key={widget_key}"></script>'
@@ -230,6 +231,33 @@ def _dashboard_html(clinic: dict, leads: list, saved: bool = False, paid: bool =
       <form method="post" action="/billing/checkout">
         <button type="submit" class="pay-btn">Subscribe Now</button>
       </form>
+    </div>"""
+
+    # Voice card
+    if twilio_phone:
+        voice_card = f"""
+    <div class="card">
+      <div class="card-title">AI Phone Receptionist</div>
+      <div style="margin-bottom:14px;">
+        <span class="badge active">Active</span>
+        <p style="margin-top:10px;color:#334155;font-size:.9rem;">Your dedicated number: <strong>{twilio_phone}</strong></p>
+      </div>
+      <p style="font-size:.85rem;color:#64748b;margin-bottom:6px;">Set this as your call-forward number when busy or no answer:</p>
+      <ol style="font-size:.85rem;color:#334155;padding-left:18px;line-height:2;">
+        <li>Go to your phone carrier settings</li>
+        <li>Enable <strong>Forward when unanswered</strong> or <strong>Forward when busy</strong></li>
+        <li>Enter: <strong>{twilio_phone}</strong></li>
+      </ol>
+    </div>"""
+    else:
+        voice_card = f"""
+    <div class="card">
+      <div class="card-title">AI Phone Receptionist</div>
+      <p style="color:#64748b;font-size:.88rem;margin-bottom:16px;">
+        Get a dedicated phone number. Set it as your forward-when-busy number and the AI will answer missed calls, answer questions, and capture leads automatically.
+      </p>
+      <button class="pay-btn" onclick="provisionNumber(this)">Get Phone Number</button>
+      <p id="provision-status" style="margin-top:12px;font-size:.85rem;color:#64748b;"></p>
     </div>"""
 
     # Build leads table rows
@@ -324,6 +352,7 @@ def _dashboard_html(clinic: dict, leads: list, saved: bool = False, paid: bool =
     {saved_banner}
     {billing_banner}
     {billing_card}
+    {voice_card}
 
     <div class="card">
       <div class="card-title">Your Embed Code</div>
@@ -357,6 +386,31 @@ def _dashboard_html(clinic: dict, leads: list, saved: bool = False, paid: bool =
   </div>
 
   <script>
+    async function provisionNumber(btn) {{
+      btn.disabled = true;
+      btn.textContent = 'Getting number...';
+      const status = document.getElementById('provision-status');
+      try {{
+        const res = await fetch('/voice/provision', {{ method: 'POST' }});
+        const data = await res.json();
+        if (data.phone) {{
+          status.textContent = 'Your number: ' + data.phone + ' — reload the page to see setup instructions.';
+          status.style.color = '#15803d';
+          btn.textContent = 'Done!';
+          setTimeout(() => location.reload(), 2000);
+        }} else {{
+          status.textContent = 'Error: ' + (data.error || 'unknown');
+          status.style.color = '#b91c1c';
+          btn.disabled = false;
+          btn.textContent = 'Get Phone Number';
+        }}
+      }} catch(e) {{
+        status.textContent = 'Request failed. Try again.';
+        btn.disabled = false;
+        btn.textContent = 'Get Phone Number';
+      }}
+    }}
+
     function copyEmbed() {{
       const src = 'https://web-production-83065.up.railway.app/widget.js?key={widget_key}';
       const raw = '<script src="' + src + '"><' + '/script>';

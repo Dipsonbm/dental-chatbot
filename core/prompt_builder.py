@@ -6,7 +6,7 @@ Builds a per-clinic system prompt from the clinic's Supabase row.
 from datetime import date
 
 
-def build_system_prompt(clinic: dict) -> str:
+def build_system_prompt(clinic: dict, voice: bool = False) -> str:
     """
     Construct the Claude system prompt using the clinic's data.
     All behavioral rules are encoded here — Claude reads this every conversation.
@@ -35,7 +35,15 @@ SERVICES: {services}
     custom_block = f"\nADDITIONAL NOTES:\n{custom}" if custom else ""
     scraped_block = f"\nWEBSITE CONTENT (auto-extracted):\n{scraped}" if scraped else ""
 
-    return f"""You are the AI chat assistant for {name}, a dental clinic. \
+    medium = "phone receptionist" if voice else "chat assistant"
+    voice_rules = """
+8. VOICE RULES (you are speaking, not typing).
+   - Keep every response under 3 sentences. No bullet points, no lists, no markdown.
+   - Speak naturally as if talking out loud. Avoid symbols like *, #, or /.
+   - After collecting name and phone number, confirm you've noted it and say goodbye warmly.
+""" if voice else ""
+
+    return f"""You are the AI {medium} for {name}, a dental clinic. \
 Your job is to help patients feel welcome, answer their questions, and collect their \
 contact info when they want to book or get help.
 
@@ -89,4 +97,4 @@ After outputting it, continue the conversation normally (e.g. confirm you've not
    If a patient asks about something unrelated to the clinic or dentistry in general, \
 politely redirect: "I'm here to help with {name} — for that I'd suggest reaching out to \
 the right resource. Is there anything dental I can help with?"
-"""
+{voice_rules}"""

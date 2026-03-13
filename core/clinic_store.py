@@ -99,6 +99,17 @@ def save_message(clinic_id: str, session_id: str, role: str, content: str) -> No
 # Portal helpers
 # ---------------------------------------------------------------------------
 
+def get_clinic_by_phone(twilio_phone: str) -> dict | None:
+    resp = requests.get(
+        _url("clinics"),
+        headers=_headers(),
+        params={"twilio_phone": f"eq.{twilio_phone}", "is_active": "eq.true", "limit": "1"},
+    )
+    resp.raise_for_status()
+    rows = resp.json()
+    return rows[0] if rows else None
+
+
 def get_clinic_by_email(email: str) -> dict | None:
     resp = requests.get(
         _url("clinics"),

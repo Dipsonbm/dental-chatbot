@@ -186,6 +186,8 @@ _FORM_HTML = """<!DOCTYPE html>
 
 
 def _success_html(clinic_name: str, embed_snippet: str) -> str:
+    import html as _html
+    escaped = _html.escape(embed_snippet)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -222,7 +224,7 @@ def _success_html(clinic_name: str, embed_snippet: str) -> str:
     <p class="subtitle">Your AI chatbot is ready. Follow the steps below to add it to your website.</p>
 
     <h2>Your Embed Code</h2>
-    <div class="code-box" id="snippet">{embed_snippet}</div>
+    <div class="code-box" id="snippet">{escaped}</div>
     <button class="copy-btn" onclick="copySnippet()">Copy Code</button>
 
     <div class="steps">

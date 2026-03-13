@@ -4,6 +4,7 @@ POST /api/chat — the main chat endpoint consumed by the widget.
 """
 
 from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from core.security import resolve_clinic, check_origin
@@ -31,7 +32,15 @@ async def chat_endpoint(payload: ChatRequest, request: Request):
     # 1. Resolve clinic from widget_key (raises 403 if invalid)
     clinic = resolve_clinic(payload.widget_key)
 
-    # 2. Validate request origin against clinic's allowed_domain
+    # 2. Check subscription status — inactive clinics get a polite message
+    status = (clinic.get("subscription_status") or "inactive")
+    if status not in ("active",):
+        return JSONResponse(
+            {"reply": "This chatbot is currently unavailable. Please contact the clinic directly."},
+            status_code=200,
+        )
+
+    # 3. Validate request origin against clinic's allowed_domain
     check_origin(request, clinic)
 
     # 3. Load conversation history from DB (backend is source of truth)

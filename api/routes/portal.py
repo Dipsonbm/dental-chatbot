@@ -74,7 +74,9 @@ async def dashboard(request: Request):
         return RedirectResponse("/portal/login", status_code=303)
 
     leads = get_leads(clinic["clinic_id"])
-    return HTMLResponse(_dashboard_html(clinic, leads))
+    paid      = request.query_params.get("paid") == "1"
+    cancelled = request.query_params.get("cancelled") == "1"
+    return HTMLResponse(_dashboard_html(clinic, leads, paid=paid, cancelled=cancelled))
 
 
 @router.post("/portal/update", response_class=HTMLResponse)
@@ -174,18 +176,61 @@ def _login_html(error: str = "") -> str:
 </html>"""
 
 
-def _dashboard_html(clinic: dict, leads: list, saved: bool = False) -> str:
+def _dashboard_html(clinic: dict, leads: list, saved: bool = False, paid: bool = False, cancelled: bool = False) -> str:
     name         = clinic.get("name", "Your Clinic")
     widget_key   = clinic.get("widget_key", "")
     hours        = clinic.get("hours") or ""
     services     = clinic.get("services") or ""
     faqs         = clinic.get("faqs") or ""
     custom_notes = clinic.get("custom_notes") or ""
+    sub_status   = clinic.get("subscription_status") or "inactive"
 
     embed = f'&lt;script src="https://web-production-83065.up.railway.app/widget.js?key={widget_key}"&gt;&lt;/script&gt;'
     embed_raw = f'<script src="https://web-production-83065.up.railway.app/widget.js?key={widget_key}"></script>'
 
     saved_banner = '<div class="banner">Changes saved successfully.</div>' if saved else ""
+
+    if paid:
+        billing_banner = '<div class="banner">Payment successful! Your chatbot is now active.</div>'
+    elif cancelled:
+        billing_banner = '<div class="banner warn">Payment cancelled. Your chatbot is not active yet.</div>'
+    else:
+        billing_banner = ""
+
+    if sub_status == "active":
+        billing_card = f"""
+    <div class="card">
+      <div class="card-title">Subscription</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="badge active">Active</span>
+        <span style="color:#64748b;font-size:.88rem;">$200 setup + $450/month</span>
+      </div>
+    </div>"""
+    elif sub_status == "past_due":
+        billing_card = f"""
+    <div class="card">
+      <div class="card-title">Subscription</div>
+      <div style="margin-bottom:14px;">
+        <span class="badge past-due">Payment Past Due</span>
+        <p style="margin-top:10px;color:#92400e;font-size:.88rem;">Your last payment failed. Please update your payment method — your chatbot is paused until resolved.</p>
+      </div>
+      <form method="post" action="/billing/checkout">
+        <button type="submit" class="pay-btn">Update Payment</button>
+      </form>
+    </div>"""
+    else:
+        billing_card = f"""
+    <div class="card">
+      <div class="card-title">Subscription</div>
+      <div style="margin-bottom:14px;">
+        <span class="badge inactive">Inactive</span>
+        <p style="margin-top:10px;color:#64748b;font-size:.88rem;">Your chatbot is not live yet. Subscribe to activate it on your website.</p>
+        <p style="margin-top:6px;font-size:.82rem;color:#94a3b8;">$200 one-time setup fee + $450/month</p>
+      </div>
+      <form method="post" action="/billing/checkout">
+        <button type="submit" class="pay-btn">Subscribe Now</button>
+      </form>
+    </div>"""
 
     # Build leads table rows
     if leads:
@@ -256,6 +301,14 @@ def _dashboard_html(clinic: dict, leads: list, saved: bool = False) -> str:
     .save-btn:hover {{ background: #1d4ed8; }}
     .banner {{ background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0;
                border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: .9rem; }}
+    .banner.warn {{ background: #fffbeb; color: #92400e; border-color: #fde68a; }}
+    .badge {{ display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: .8rem; font-weight: 700; }}
+    .badge.active   {{ background: #dcfce7; color: #15803d; }}
+    .badge.past-due {{ background: #fef3c7; color: #92400e; }}
+    .badge.inactive {{ background: #f1f5f9; color: #64748b; }}
+    .pay-btn {{ padding: 12px 28px; background: {ACCENT}; color: #fff; border: none;
+                border-radius: 8px; font-size: .95rem; font-weight: 600; cursor: pointer; }}
+    .pay-btn:hover {{ background: #1d4ed8; }}
   </style>
 </head>
 <body>
@@ -269,6 +322,8 @@ def _dashboard_html(clinic: dict, leads: list, saved: bool = False) -> str:
 
   <div class="main">
     {saved_banner}
+    {billing_banner}
+    {billing_card}
 
     <div class="card">
       <div class="card-title">Your Embed Code</div>

@@ -204,7 +204,7 @@
     </div>
     <div id="dentalbot-messages"></div>
     <div id="dentalbot-input-row">
-      <input id="dentalbot-input" type="text" placeholder="Type a message…" autocomplete="off" />
+      <input id="dentalbot-input" type="text" placeholder="Type a message..." autocomplete="off" />
       <button id="dentalbot-send" aria-label="Send">${SEND_SVG}</button>
     </div>
     <div id="dentalbot-footer">Powered by <a href="#" tabindex="-1">Ars</a></div>

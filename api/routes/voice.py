@@ -33,6 +33,30 @@ def _client() -> Client:
     return Client(os.environ["TWILIO_ACCOUNT_SID"], os.environ["TWILIO_AUTH_TOKEN"])
 
 
+def _send_sms_confirmation(clinic: dict, lead: dict) -> None:
+    """Send an SMS confirmation to the patient after lead capture."""
+    patient_phone = lead.get("phone")
+    clinic_phone  = clinic.get("twilio_phone")
+    if not patient_phone or not clinic_phone:
+        return
+
+    clinic_name = clinic.get("name", "the clinic")
+    interest    = lead.get("interest") or "your inquiry"
+    name        = lead.get("name") or "there"
+
+    body = (
+        f"Hi {name}! Thanks for calling {clinic_name}. "
+        f"We've noted your interest in {interest} and will call you back shortly to confirm. "
+        f"Questions? Call us at {clinic_phone}."
+    )
+
+    _client().messages.create(
+        body=body,
+        from_=clinic_phone,
+        to=patient_phone,
+    )
+
+
 def _xml(resp: VoiceResponse) -> Response:
     return Response(content=str(resp), media_type="application/xml")
 
@@ -115,6 +139,7 @@ async def voice_respond(
                 interest=lead.get("interest"),
             )
             send_lead_alert(clinic["name"], clinic["email"], lead)
+            _send_sms_confirmation(clinic, lead)
         except Exception:
             pass
 

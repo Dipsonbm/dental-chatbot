@@ -12,6 +12,7 @@ from fastapi.responses import HTMLResponse
 from core.clinic_store import insert_clinic
 from core.email_client import send_welcome_email
 from core.scraper import scrape_website, extract_hours_hint
+from core.auth import hash_password
 
 router = APIRouter()
 
@@ -54,6 +55,7 @@ async def register_clinic(
     services: str = Form(""),
     faqs: str = Form(""),
     custom_notes: str = Form(""),
+    password: str = Form(...),
 ):
     clinic_id  = _make_clinic_id(name)
     widget_key = _make_widget_key()
@@ -79,6 +81,7 @@ async def register_clinic(
         "faqs":           faqs or None,
         "custom_notes":   custom_notes or None,
         "scraped_content": scraped or None,
+        "password_hash":  hash_password(password),
     })
 
     base_url = _base_url(request)
@@ -170,6 +173,12 @@ _FORM_HTML = """<!DOCTYPE html>
       <label>Anything Else the AI Should Know</label>
       <textarea name="custom_notes" placeholder="We specialize in anxious patients. We do not offer same-day implants. Dr. Smith speaks Spanish..."></textarea>
 
+      <p class="section-title">Portal Access</p>
+
+      <label>Password <span class="required">*</span></label>
+      <input type="password" name="password" placeholder="Choose a password for your clinic portal" required>
+      <p class="hint">You'll use this to log in to your dashboard and view leads.</p>
+
       <button type="submit">Generate My Chatbot →</button>
     </form>
   </div>
@@ -239,6 +248,7 @@ def _success_html(clinic_name: str, embed_snippet: str) -> str:
     </div>
 
     <p><span class="check">&#10003;</span>We also sent your embed code to your email address.</p>
+    <p style="margin-top:16px;"><a href="/portal/login" style="color:#2563eb;font-weight:600;">Go to your clinic dashboard &rarr;</a></p>
   </div>
 
   <script>

@@ -93,3 +93,54 @@ def save_message(clinic_id: str, session_id: str, role: str, content: str) -> No
         },
     )
     resp.raise_for_status()
+
+
+# ---------------------------------------------------------------------------
+# Portal helpers
+# ---------------------------------------------------------------------------
+
+def get_clinic_by_email(email: str) -> dict | None:
+    resp = requests.get(
+        _url("clinics"),
+        headers=_headers(),
+        params={"email": f"eq.{email}", "limit": "1"},
+    )
+    resp.raise_for_status()
+    rows = resp.json()
+    return rows[0] if rows else None
+
+
+def get_clinic_by_id(clinic_id: str) -> dict | None:
+    resp = requests.get(
+        _url("clinics"),
+        headers=_headers(),
+        params={"clinic_id": f"eq.{clinic_id}", "limit": "1"},
+    )
+    resp.raise_for_status()
+    rows = resp.json()
+    return rows[0] if rows else None
+
+
+def update_clinic(clinic_id: str, data: dict) -> None:
+    resp = requests.patch(
+        _url("clinics"),
+        headers=_headers(),
+        params={"clinic_id": f"eq.{clinic_id}"},
+        json=data,
+    )
+    resp.raise_for_status()
+
+
+def get_leads(clinic_id: str, limit: int = 30) -> list[dict]:
+    resp = requests.get(
+        _url("leads"),
+        headers=_headers(),
+        params={
+            "clinic_id": f"eq.{clinic_id}",
+            "order": "created_at.desc",
+            "limit": str(limit),
+            "select": "name,phone,email,interest,created_at",
+        },
+    )
+    resp.raise_for_status()
+    return resp.json() or []

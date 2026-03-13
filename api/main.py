@@ -19,6 +19,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from api.routes.chat import router as chat_router
 from api.routes.onboarding import router as onboarding_router
+from api.routes.portal import router as portal_router
 
 app = FastAPI(title="Dental Clinic Chatbot Platform", docs_url="/docs")
 
@@ -54,6 +55,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 # ---------------------------------------------------------------------------
 app.include_router(chat_router)
 app.include_router(onboarding_router)
+app.include_router(portal_router)
 
 
 # ---------------------------------------------------------------------------

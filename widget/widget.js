@@ -30,9 +30,7 @@
   // ---------------------------------------------------------------------------
   // SVG icons
   // ---------------------------------------------------------------------------
-  const TOOTH_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-    <path d="M12 2C9.8 2 8.1 3.2 6.5 3.2C5 3.2 3.8 2.3 3.2 3.2C2.5 4.3 3.2 7.2 4.2 9.5C5 11.4 5.2 13.2 5.8 15.8C6.3 18 7 21.5 8.8 21.5C9.9 21.5 10.4 19.8 11.2 18.5C11.6 17.8 12 17.8 12 17.8C12 17.8 12.4 17.8 12.8 18.5C13.6 19.8 14.1 21.5 15.2 21.5C17 21.5 17.7 18 18.2 15.8C18.8 13.2 19 11.4 19.8 9.5C20.8 7.2 21.5 4.3 20.8 3.2C20.2 2.3 19 3.2 17.5 3.2C15.9 3.2 14.2 2 12 2Z"/>
-  </svg>`;
+  const TOOTH_SVG = `<span style="font-size:20px;line-height:1;">😁</span>`;
 
   const CHAT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
     <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H5.2L4 17.2V4H20V16Z"/>
@@ -209,7 +207,7 @@
       <input id="dentalbot-input" type="text" placeholder="Type a message…" autocomplete="off" />
       <button id="dentalbot-send" aria-label="Send">${SEND_SVG}</button>
     </div>
-    <div id="dentalbot-footer">Powered by <a href="#" tabindex="-1">DentalBot AI</a></div>
+    <div id="dentalbot-footer">Powered by <a href="#" tabindex="-1">Ars</a></div>
   `;
 
   document.body.appendChild(btn);

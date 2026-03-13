@@ -11,6 +11,7 @@ from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse
 from core.clinic_store import insert_clinic
 from core.email_client import send_welcome_email
+from core.scraper import scrape_website
 
 router = APIRouter()
 
@@ -53,6 +54,9 @@ async def register_clinic(
     clinic_id  = _make_clinic_id(name)
     widget_key = _make_widget_key()
 
+    # Auto-scrape the clinic's website if provided
+    scraped = scrape_website(website) if website else ""
+
     insert_clinic({
         "clinic_id":      clinic_id,
         "widget_key":     widget_key,
@@ -66,6 +70,7 @@ async def register_clinic(
         "services":       services or None,
         "faqs":           faqs or None,
         "custom_notes":   custom_notes or None,
+        "scraped_content": scraped or None,
     })
 
     base_url = _base_url(request)

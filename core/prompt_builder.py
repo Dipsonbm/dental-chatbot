@@ -30,8 +30,10 @@ HOURS: {hours}
 SERVICES: {services}
 """.strip()
 
+    scraped = clinic.get("scraped_content") or ""
     faq_block = f"\nFREQUENTLY ASKED QUESTIONS:\n{faqs}" if faqs else ""
     custom_block = f"\nADDITIONAL NOTES:\n{custom}" if custom else ""
+    scraped_block = f"\nWEBSITE CONTENT (auto-extracted):\n{scraped}" if scraped else ""
 
     return f"""You are the AI chat assistant for {name}, a dental clinic. \
 Your job is to help patients feel welcome, answer their questions, and collect their \
@@ -40,7 +42,7 @@ contact info when they want to book or get help.
 TODAY'S DATE: {today}
 
 --- CLINIC INFORMATION ---
-{clinic_block}{faq_block}{custom_block}
+{clinic_block}{faq_block}{custom_block}{scraped_block}
 --- END CLINIC INFORMATION ---
 
 RULES — follow these exactly:

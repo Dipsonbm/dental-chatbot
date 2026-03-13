@@ -11,7 +11,7 @@ from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse
 from core.clinic_store import insert_clinic
 from core.email_client import send_welcome_email
-from core.scraper import scrape_website
+from core.scraper import scrape_website, extract_hours_hint
 
 router = APIRouter()
 
@@ -56,6 +56,10 @@ async def register_clinic(
 
     # Auto-scrape the clinic's website if provided
     scraped = scrape_website(website) if website else ""
+
+    # Auto-detect hours from scrape if clinic left the field blank
+    if not hours and scraped:
+        hours = extract_hours_hint(scraped)
 
     insert_clinic({
         "clinic_id":      clinic_id,

@@ -59,6 +59,32 @@ def _find_key_links(html: str, base_url: str) -> list[str]:
     return found[:5]  # cap at 5 sub-pages
 
 
+_DAY_RE  = re.compile(r"\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tue|wed|thu|fri|sat|sun)\b", re.IGNORECASE)
+_TIME_RE = re.compile(r"\b\d{1,2}(:\d{2})?\s*(am|pm)\b", re.IGNORECASE)
+_OPEN_RE = re.compile(r"\b(hours|open|closed|schedule)\b", re.IGNORECASE)
+
+
+def extract_hours_hint(text: str) -> str:
+    """
+    Scan scraped text for hours-related sentences.
+    Returns a short string with the best candidates, or '' if nothing found.
+    """
+    if not text:
+        return ""
+    chunks = re.split(r"[.\n|•]", text)
+    relevant = []
+    for chunk in chunks:
+        chunk = chunk.strip()
+        if not chunk or len(chunk) > 200:
+            continue
+        has_day  = bool(_DAY_RE.search(chunk))
+        has_time = bool(_TIME_RE.search(chunk))
+        has_open = bool(_OPEN_RE.search(chunk))
+        if (has_day and has_time) or (has_open and has_time):
+            relevant.append(chunk)
+    return ". ".join(relevant[:8])  # cap at 8 relevant snippets
+
+
 def scrape_website(url: str, max_chars: int = 6000) -> str:
     """
     Scrape the clinic's website and return a text summary.

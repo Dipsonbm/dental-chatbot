@@ -146,6 +146,10 @@ _FORM_HTML = """<!DOCTYPE html>
       <input type="email" name="email" placeholder="hello@sunshinedentalnyc.com" required>
       <p class="hint">We'll send your embed code here.</p>
 
+      <label>Password <span class="required">*</span></label>
+      <input type="password" name="password" placeholder="Choose a password for your clinic portal" required>
+      <p class="hint">You'll use this to log in and view your leads. Make sure it's something you'll remember.</p>
+
       <label>Phone Number</label>
       <input type="tel" name="phone" placeholder="(212) 555-0100">
 
@@ -172,12 +176,6 @@ _FORM_HTML = """<!DOCTYPE html>
 
       <label>Anything Else the AI Should Know</label>
       <textarea name="custom_notes" placeholder="We specialize in anxious patients. We do not offer same-day implants. Dr. Smith speaks Spanish..."></textarea>
-
-      <p class="section-title">Portal Access</p>
-
-      <label>Password <span class="required">*</span></label>
-      <input type="password" name="password" placeholder="Choose a password for your clinic portal" required>
-      <p class="hint">You'll use this to log in to your dashboard and view leads.</p>
 
       <button type="submit">Generate My Chatbot →</button>
     </form>

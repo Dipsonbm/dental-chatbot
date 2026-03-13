@@ -303,7 +303,8 @@ def _dashboard_html(clinic: dict, leads: list, saved: bool = False) -> str:
 
   <script>
     function copyEmbed() {{
-      const raw = `{embed_raw}`;
+      const src = 'https://web-production-83065.up.railway.app/widget.js?key={widget_key}';
+      const raw = '<script src="' + src + '"><' + '/script>';
       navigator.clipboard.writeText(raw).then(() => {{
         const btn = document.querySelector('.copy-btn');
         btn.textContent = 'Copied!';

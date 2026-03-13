@@ -13,7 +13,7 @@ import requests
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
-MODEL = "llama-3.1-70b-versatile"
+MODEL = "llama-3.3-70b-versatile"
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 # Matches:  LEAD: {"name":"...","phone":"...","email":"...","interest":"..."}

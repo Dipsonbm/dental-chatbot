@@ -28,7 +28,11 @@ def _make_widget_key() -> str:
 
 
 def _base_url(request: Request) -> str:
-    return str(request.base_url).rstrip("/")
+    base = str(request.base_url).rstrip("/")
+    # Railway terminates TLS at the proxy — force https for the embed snippet
+    if base.startswith("http://") and "railway.app" in base:
+        base = "https://" + base[len("http://"):]
+    return base
 
 
 @router.get("/onboarding", response_class=HTMLResponse)

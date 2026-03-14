@@ -51,12 +51,20 @@ async def create_checkout(request: Request):
     s = _stripe_client()
     base = _base_url(request)
 
+    plan = clinic.get("plan") or "chatbot"
+    plan_price_map = {
+        "chatbot": os.environ["STRIPE_CHATBOT_PRICE_ID"],
+        "voice":   os.environ["STRIPE_VOICE_PRICE_ID"],
+        "both":    os.environ["STRIPE_BOTH_PRICE_ID"],
+    }
+    monthly_price_id = plan_price_map.get(plan, os.environ["STRIPE_CHATBOT_PRICE_ID"])
+
     session = s.checkout.Session.create(
         mode="subscription",
         customer_email=clinic["email"],
         line_items=[
-            {"price": os.environ["STRIPE_SETUP_PRICE_ID"],   "quantity": 1},
-            {"price": os.environ["STRIPE_MONTHLY_PRICE_ID"], "quantity": 1},
+            {"price": os.environ["STRIPE_SETUP_PRICE_ID"], "quantity": 1},
+            {"price": monthly_price_id,                    "quantity": 1},
         ],
         metadata={"clinic_id": clinic_id},
         success_url=base + "/portal/dashboard?paid=1",

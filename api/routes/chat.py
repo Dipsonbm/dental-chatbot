@@ -40,6 +40,14 @@ async def chat_endpoint(payload: ChatRequest, request: Request):
             status_code=200,
         )
 
+    # 2b. Check plan — voice-only clinics don't get the chat widget
+    plan = (clinic.get("plan") or "chatbot")
+    if plan == "voice":
+        return JSONResponse(
+            {"reply": "This chatbot is not available for this clinic. Please call us directly."},
+            status_code=200,
+        )
+
     # 3. Validate request origin against clinic's allowed_domain
     check_origin(request, clinic)
 

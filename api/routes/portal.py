@@ -176,6 +176,18 @@ def _login_html(error: str = "") -> str:
 </html>"""
 
 
+_PLAN_LABELS = {
+    "chatbot": "Chatbot Only",
+    "voice":   "Voice Only",
+    "both":    "Chatbot + Voice",
+}
+_PLAN_PRICES = {
+    "chatbot": "$350/month",
+    "voice":   "$400/month",
+    "both":    "$550/month",
+}
+
+
 def _dashboard_html(clinic: dict, leads: list, saved: bool = False, paid: bool = False, cancelled: bool = False) -> str:
     name         = clinic.get("name", "Your Clinic")
     widget_key   = clinic.get("widget_key", "")
@@ -185,6 +197,9 @@ def _dashboard_html(clinic: dict, leads: list, saved: bool = False, paid: bool =
     custom_notes = clinic.get("custom_notes") or ""
     sub_status   = clinic.get("subscription_status") or "inactive"
     twilio_phone = clinic.get("twilio_phone") or ""
+    plan         = clinic.get("plan") or "chatbot"
+    plan_label   = _PLAN_LABELS.get(plan, "Chatbot Only")
+    plan_price   = _PLAN_PRICES.get(plan, "$350/month")
 
     embed = f'&lt;script src="https://web-production-83065.up.railway.app/widget.js?key={widget_key}"&gt;&lt;/script&gt;'
     embed_raw = f'<script src="https://web-production-83065.up.railway.app/widget.js?key={widget_key}"></script>'
@@ -202,9 +217,9 @@ def _dashboard_html(clinic: dict, leads: list, saved: bool = False, paid: bool =
         billing_card = f"""
     <div class="card">
       <div class="card-title">Subscription</div>
-      <div style="display:flex;align-items:center;gap:10px;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span class="badge active">Active</span>
-        <span style="color:#64748b;font-size:.88rem;">$200 setup + $450/month</span>
+        <span style="color:#64748b;font-size:.88rem;">{plan_label} &mdash; $400 setup + {plan_price}</span>
       </div>
     </div>"""
     elif sub_status == "past_due":
@@ -213,7 +228,7 @@ def _dashboard_html(clinic: dict, leads: list, saved: bool = False, paid: bool =
       <div class="card-title">Subscription</div>
       <div style="margin-bottom:14px;">
         <span class="badge past-due">Payment Past Due</span>
-        <p style="margin-top:10px;color:#92400e;font-size:.88rem;">Your last payment failed. Please update your payment method — your chatbot is paused until resolved.</p>
+        <p style="margin-top:10px;color:#92400e;font-size:.88rem;">Your last payment failed. Please update your payment method — your service is paused until resolved.</p>
       </div>
       <form method="post" action="/billing/checkout">
         <button type="submit" class="pay-btn">Update Payment</button>
@@ -225,16 +240,18 @@ def _dashboard_html(clinic: dict, leads: list, saved: bool = False, paid: bool =
       <div class="card-title">Subscription</div>
       <div style="margin-bottom:14px;">
         <span class="badge inactive">Inactive</span>
-        <p style="margin-top:10px;color:#64748b;font-size:.88rem;">Your chatbot is not live yet. Subscribe to activate it on your website.</p>
-        <p style="margin-top:6px;font-size:.82rem;color:#94a3b8;">$200 one-time setup fee + $450/month</p>
+        <p style="margin-top:10px;color:#64748b;font-size:.88rem;">Your plan is not active yet. Subscribe to go live.</p>
+        <p style="margin-top:6px;font-size:.82rem;color:#94a3b8;">{plan_label} &mdash; $400 one-time setup + {plan_price}</p>
       </div>
       <form method="post" action="/billing/checkout">
         <button type="submit" class="pay-btn">Subscribe Now</button>
       </form>
     </div>"""
 
-    # Voice card
-    if twilio_phone:
+    # Voice card — only shown for voice or both plans
+    if plan == "chatbot":
+        voice_card = ""
+    elif twilio_phone:
         voice_card = f"""
     <div class="card">
       <div class="card-title">AI Phone Receptionist</div>
@@ -354,11 +371,7 @@ def _dashboard_html(clinic: dict, leads: list, saved: bool = False, paid: bool =
     {billing_card}
     {voice_card}
 
-    <div class="card">
-      <div class="card-title">Your Embed Code</div>
-      <div class="code-box" id="embed-snippet">{embed}</div>
-      <button class="copy-btn" onclick="copyEmbed()">Copy Code</button>
-    </div>
+    {'<div class="card"><div class="card-title">Your Embed Code</div><div class="code-box" id="embed-snippet">' + embed + '</div><button class="copy-btn" onclick="copyEmbed()">Copy Code</button></div>' if plan != 'voice' else ''}
 
     <div class="card">
       <div class="card-title">Recent Leads</div>

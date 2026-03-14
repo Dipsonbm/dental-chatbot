@@ -56,6 +56,7 @@ async def register_clinic(
     faqs: str = Form(""),
     custom_notes: str = Form(""),
     password: str = Form(...),
+    plan: str = Form("chatbot"),
 ):
     clinic_id  = _make_clinic_id(name)
     widget_key = _make_widget_key()
@@ -67,6 +68,7 @@ async def register_clinic(
     if not hours and scraped:
         hours = extract_hours_hint(scraped)
 
+    valid_plans = {"chatbot", "voice", "both"}
     insert_clinic({
         "clinic_id":      clinic_id,
         "widget_key":     widget_key,
@@ -82,6 +84,7 @@ async def register_clinic(
         "custom_notes":   custom_notes or None,
         "scraped_content": scraped or None,
         "password_hash":  hash_password(password),
+        "plan":           plan if plan in valid_plans else "chatbot",
     })
 
     base_url = _base_url(request)
@@ -128,6 +131,16 @@ _FORM_HTML = """<!DOCTYPE html>
     .section-title { font-size: .75rem; font-weight: 700; color: #888;
                      text-transform: uppercase; letter-spacing: .08em;
                      margin-top: 32px; margin-bottom: -4px; }
+    .plan-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 14px; }
+    .plan-option input[type=radio] { display: none; }
+    .plan-option label { display: block; border: 2px solid #d0d5dd; border-radius: 10px;
+                         padding: 16px 12px; cursor: pointer; text-align: center;
+                         transition: border-color .15s, background .15s; }
+    .plan-option input:checked + label { border-color: #2563eb; background: #eff6ff; }
+    .plan-option label:hover { border-color: #93c5fd; }
+    .plan-name { font-weight: 700; font-size: .95rem; margin-bottom: 4px; }
+    .plan-price { font-size: .82rem; color: #2563eb; font-weight: 600; }
+    .plan-desc { font-size: .75rem; color: #64748b; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -136,6 +149,35 @@ _FORM_HTML = """<!DOCTYPE html>
     <p class="subtitle">Fill in your clinic's details and we'll generate a chat widget you can add to your website in seconds.</p>
 
     <form method="post" action="/clinic/register">
+
+      <p class="section-title">Choose Your Plan</p>
+      <div class="plan-grid">
+        <div class="plan-option">
+          <input type="radio" name="plan" id="plan-chatbot" value="chatbot" checked>
+          <label for="plan-chatbot">
+            <div class="plan-name">Chatbot Only</div>
+            <div class="plan-price">$350/mo</div>
+            <div class="plan-desc">AI chat widget on your website</div>
+          </label>
+        </div>
+        <div class="plan-option">
+          <input type="radio" name="plan" id="plan-voice" value="voice">
+          <label for="plan-voice">
+            <div class="plan-name">Voice Only</div>
+            <div class="plan-price">$400/mo</div>
+            <div class="plan-desc">AI phone receptionist for missed calls</div>
+          </label>
+        </div>
+        <div class="plan-option">
+          <input type="radio" name="plan" id="plan-both" value="both">
+          <label for="plan-both">
+            <div class="plan-name">Chatbot + Voice</div>
+            <div class="plan-price">$550/mo</div>
+            <div class="plan-desc">Full AI coverage — chat & phone</div>
+          </label>
+        </div>
+      </div>
+      <p class="hint">All plans include a $400 one-time setup fee.</p>
 
       <p class="section-title">Clinic Basics</p>
 

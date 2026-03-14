@@ -169,6 +169,11 @@ async def provision_number(request: Request):
     if not clinic:
         return JSONResponse({"error": "not found"}, status_code=404)
 
+    # Check plan allows voice
+    plan = clinic.get("plan") or "chatbot"
+    if plan not in ("voice", "both"):
+        return JSONResponse({"error": "Voice is not included in your current plan."}, status_code=403)
+
     # Already has a number
     if clinic.get("twilio_phone"):
         return JSONResponse({"phone": clinic["twilio_phone"]})

@@ -163,15 +163,15 @@ _FORM_HTML = """<!DOCTYPE html>
         <div class="plan-option">
           <input type="radio" name="plan" id="plan-voice" value="voice">
           <label for="plan-voice">
-            <div class="plan-name">Voice Only</div>
+            <div class="plan-name">AI Receptionist Only</div>
             <div class="plan-price">$400/mo</div>
-            <div class="plan-desc">AI phone receptionist for missed calls</div>
+            <div class="plan-desc">AI answers missed calls & captures leads</div>
           </label>
         </div>
         <div class="plan-option">
           <input type="radio" name="plan" id="plan-both" value="both">
           <label for="plan-both">
-            <div class="plan-name">Chatbot + Voice</div>
+            <div class="plan-name">Chatbot + AI Receptionist</div>
             <div class="plan-price">$550/mo</div>
             <div class="plan-desc">Full AI coverage — chat & phone</div>
           </label>

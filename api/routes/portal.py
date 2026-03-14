@@ -178,8 +178,8 @@ def _login_html(error: str = "") -> str:
 
 _PLAN_LABELS = {
     "chatbot": "Chatbot Only",
-    "voice":   "Voice Only",
-    "both":    "Chatbot + Voice",
+    "voice":   "AI Receptionist Only",
+    "both":    "Chatbot + AI Receptionist",
 }
 _PLAN_PRICES = {
     "chatbot": "$350/month",

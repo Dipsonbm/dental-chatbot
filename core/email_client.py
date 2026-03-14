@@ -44,6 +44,9 @@ Tips:
 - Patients can ask questions, and it will collect their contact info for appointments
 - You'll get an email notification each time a patient submits their details
 
+Your clinic dashboard (view leads, manage settings):
+{base_url}/portal/login
+
 Questions? Reply to this email and we'll help you out.
 """
 

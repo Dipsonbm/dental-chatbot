@@ -22,6 +22,7 @@ from api.routes.onboarding import router as onboarding_router
 from api.routes.portal import router as portal_router
 from api.routes.billing import router as billing_router
 from api.routes.voice import router as voice_router
+from api.routes.legal import router as legal_router
 
 app = FastAPI(title="Dental Clinic Chatbot Platform", docs_url="/docs")
 
@@ -60,6 +61,7 @@ app.include_router(onboarding_router)
 app.include_router(portal_router)
 app.include_router(billing_router)
 app.include_router(voice_router)
+app.include_router(legal_router)
 
 
 # ---------------------------------------------------------------------------

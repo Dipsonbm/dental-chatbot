@@ -9,7 +9,7 @@ import secrets
 import re
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse
-from core.clinic_store import insert_clinic
+from core.clinic_store import insert_clinic, get_clinic_by_email
 from core.email_client import send_welcome_email
 from core.scraper import scrape_website, extract_hours_hint
 from core.auth import hash_password
@@ -58,6 +58,13 @@ async def register_clinic(
     password: str = Form(...),
     plan: str = Form("chatbot"),
 ):
+    # Block duplicate registrations
+    if get_clinic_by_email(email.lower().strip()):
+        return HTMLResponse(content=_FORM_HTML.replace(
+            '<form method="post" action="/clinic/register">',
+            '<p style="color:#e53e3e;font-weight:600;margin-bottom:16px;">An account with that email already exists. Please <a href="/portal/login" style="color:#2563eb;">log in</a> instead.</p><form method="post" action="/clinic/register">'
+        ))
+
     clinic_id  = _make_clinic_id(name)
     widget_key = _make_widget_key()
 
@@ -73,7 +80,7 @@ async def register_clinic(
         "clinic_id":      clinic_id,
         "widget_key":     widget_key,
         "name":           name,
-        "email":          email,
+        "email":          email.lower().strip(),
         "phone":          phone or None,
         "address":        address or None,
         "website":        website or None,

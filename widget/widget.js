@@ -207,7 +207,7 @@
       <input id="dentalbot-input" type="text" placeholder="Type a message..." autocomplete="off" />
       <button id="dentalbot-send" aria-label="Send">${SEND_SVG}</button>
     </div>
-    <div id="dentalbot-footer">Powered by <a href="#" tabindex="-1">Ars</a></div>
+    <div id="dentalbot-footer">Powered by Ars &nbsp;|&nbsp; <a href="https://web-production-83065.up.railway.app/ai-disclaimer" target="_blank" tabindex="-1">AI Disclaimer</a></div>
   `;
 
   document.body.appendChild(btn);

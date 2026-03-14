@@ -228,6 +228,15 @@ _FORM_HTML = """<!DOCTYPE html>
 
       <button type="submit">Generate My Chatbot →</button>
     </form>
+    <p style="text-align:center;margin-top:24px;font-size:.78rem;color:#94a3b8;">
+      By signing up you agree to our
+      <a href="/terms" target="_blank" style="color:#64748b;">Terms of Service</a> and
+      <a href="/privacy" target="_blank" style="color:#64748b;">Privacy Policy</a>.
+      &nbsp;|&nbsp;
+      <a href="/ai-disclaimer" target="_blank" style="color:#64748b;">AI Disclaimer</a>
+      &nbsp;|&nbsp;
+      <a href="/medical-disclaimer" target="_blank" style="color:#64748b;">Medical Disclaimer</a>
+    </p>
   </div>
 </body>
 </html>

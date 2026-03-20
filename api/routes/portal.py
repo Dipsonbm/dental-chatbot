@@ -213,13 +213,16 @@ def _dashboard_html(clinic: dict, leads: list, saved: bool = False, paid: bool =
     else:
         billing_banner = ""
 
+    is_beta = sub_status == "active" and not clinic.get("stripe_customer_id")
+
     if sub_status == "active":
+        plan_detail = "Beta Partner &mdash; Free" if is_beta else f"$400 setup + {plan_price}"
         billing_card = f"""
     <div class="card">
       <div class="card-title">Subscription</div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span class="badge active">Active</span>
-        <span style="color:#64748b;font-size:.88rem;">{plan_label} &mdash; $400 setup + {plan_price}</span>
+        <span style="color:#64748b;font-size:.88rem;">{plan_label} &mdash; {plan_detail}</span>
       </div>
     </div>"""
     elif sub_status == "past_due":

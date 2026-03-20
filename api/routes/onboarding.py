@@ -42,6 +42,72 @@ async def onboarding_form():
     return HTMLResponse(content=_FORM_HTML)
 
 
+@router.get("/onboarding/beta", response_class=HTMLResponse)
+async def beta_onboarding_form():
+    """Serve the free beta partner signup form."""
+    return HTMLResponse(content=_BETA_FORM_HTML)
+
+
+@router.post("/clinic/register/beta", response_class=HTMLResponse)
+async def register_beta_clinic(
+    request: Request,
+    name: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(""),
+    address: str = Form(""),
+    website: str = Form(""),
+    allowed_domain: str = Form(...),
+    hours: str = Form(""),
+    services: str = Form(""),
+    faqs: str = Form(""),
+    custom_notes: str = Form(""),
+    password: str = Form(...),
+):
+    # Block duplicate registrations
+    if get_clinic_by_email(email.lower().strip()):
+        return HTMLResponse(content=_BETA_FORM_HTML.replace(
+            '<form method="post" action="/clinic/register/beta">',
+            '<p style="color:#e53e3e;font-weight:600;margin-bottom:16px;">An account with that email already exists. Please <a href="/portal/login" style="color:#2563eb;">log in</a> instead.</p><form method="post" action="/clinic/register/beta">'
+        ))
+
+    clinic_id  = _make_clinic_id(name)
+    widget_key = _make_widget_key()
+
+    scraped = scrape_website(website) if website else ""
+
+    if not hours and scraped:
+        hours = extract_hours_hint(scraped)
+
+    insert_clinic({
+        "clinic_id":           clinic_id,
+        "widget_key":          widget_key,
+        "name":                name,
+        "email":               email.lower().strip(),
+        "phone":               phone or None,
+        "address":             address or None,
+        "website":             website or None,
+        "allowed_domain":      allowed_domain.lower().strip(),
+        "hours":               hours or None,
+        "services":            services or None,
+        "faqs":                faqs or None,
+        "custom_notes":        custom_notes or None,
+        "scraped_content":     scraped or None,
+        "password_hash":       hash_password(password),
+        "plan":                "both",
+        "subscription_status": "active",
+    })
+
+    base_url = _base_url(request)
+    embed_snippet = f'<script src="{base_url}/widget.js?key={widget_key}"></script>'
+
+    try:
+        send_welcome_email(name, email, widget_key, base_url)
+    except Exception:
+        pass
+
+    return HTMLResponse(content=_success_html(name, embed_snippet))
+
+
 @router.post("/clinic/register", response_class=HTMLResponse)
 async def register_clinic(
     request: Request,
@@ -227,6 +293,121 @@ _FORM_HTML = """<!DOCTYPE html>
       <textarea name="custom_notes" placeholder="We specialize in anxious patients. We do not offer same-day implants. Dr. Smith speaks Spanish..."></textarea>
 
       <button type="submit">Generate My Chatbot →</button>
+    </form>
+    <p style="text-align:center;margin-top:24px;font-size:.78rem;color:#94a3b8;">
+      By signing up you agree to our
+      <a href="/terms" target="_blank" style="color:#64748b;">Terms of Service</a> and
+      <a href="/privacy" target="_blank" style="color:#64748b;">Privacy Policy</a>.
+      &nbsp;|&nbsp;
+      <a href="/ai-disclaimer" target="_blank" style="color:#64748b;">AI Disclaimer</a>
+      &nbsp;|&nbsp;
+      <a href="/medical-disclaimer" target="_blank" style="color:#64748b;">Medical Disclaimer</a>
+    </p>
+  </div>
+</body>
+</html>
+"""
+
+
+_BETA_FORM_HTML = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beta Partner — Free Setup</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f4f6f8; color: #1a1a2e; }
+    .container { max-width: 640px; margin: 48px auto; background: #fff;
+                 border-radius: 12px; padding: 40px; box-shadow: 0 2px 16px rgba(0,0,0,.08); }
+    h1 { font-size: 1.6rem; margin-bottom: 8px; }
+    .subtitle { color: #555; margin-bottom: 8px; font-size: .95rem; }
+    .beta-badge { display: inline-block; background: #dcfce7; color: #15803d;
+                  border: 1px solid #bbf7d0; border-radius: 20px; padding: 5px 14px;
+                  font-size: .82rem; font-weight: 700; margin-bottom: 24px; }
+    .plan-banner { background: #eff6ff; border: 2px solid #2563eb; border-radius: 10px;
+                   padding: 16px 20px; margin-bottom: 28px; }
+    .plan-banner .plan-name { font-weight: 700; font-size: 1.05rem; color: #1d4ed8; }
+    .plan-banner .plan-price { font-size: 1.3rem; font-weight: 800; color: #15803d; margin: 4px 0; }
+    .plan-banner .plan-includes { font-size: .85rem; color: #475569; line-height: 1.7; }
+    label { display: block; font-size: .85rem; font-weight: 600;
+            color: #333; margin-bottom: 4px; margin-top: 20px; }
+    input, textarea { width: 100%; padding: 10px 12px; border: 1px solid #d0d5dd;
+                      border-radius: 8px; font-size: .95rem; font-family: inherit; }
+    textarea { resize: vertical; min-height: 80px; }
+    .required { color: #e53e3e; }
+    .hint { font-size: .78rem; color: #777; margin-top: 4px; }
+    button { margin-top: 32px; width: 100%; padding: 14px;
+             background: #16a34a; color: #fff; border: none;
+             border-radius: 8px; font-size: 1rem; font-weight: 600;
+             cursor: pointer; }
+    button:hover { background: #15803d; }
+    .section-title { font-size: .75rem; font-weight: 700; color: #888;
+                     text-transform: uppercase; letter-spacing: .08em;
+                     margin-top: 32px; margin-bottom: -4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Beta Partner Setup</h1>
+    <p class="subtitle">You're getting full access — completely free.</p>
+    <span class="beta-badge">Beta Partner</span>
+
+    <div class="plan-banner">
+      <div class="plan-name">Chatbot + AI Receptionist</div>
+      <div class="plan-price">$0 / month</div>
+      <div class="plan-includes">
+        ✓ AI chat widget for your website<br>
+        ✓ AI phone receptionist for missed calls<br>
+        ✓ Lead capture &amp; instant email alerts<br>
+        ✓ Clinic management portal<br>
+        ✓ No setup fee &mdash; no credit card needed
+      </div>
+    </div>
+
+    <form method="post" action="/clinic/register/beta">
+
+      <p class="section-title">Clinic Basics</p>
+
+      <label>Clinic Name <span class="required">*</span></label>
+      <input type="text" name="name" placeholder="Sunshine Dental NYC" required>
+
+      <label>Contact Email <span class="required">*</span></label>
+      <input type="email" name="email" placeholder="hello@sunshinedentalnyc.com" required>
+      <p class="hint">We'll send your embed code here.</p>
+
+      <label>Password <span class="required">*</span></label>
+      <input type="password" name="password" placeholder="Choose a password for your clinic portal" required>
+      <p class="hint">You'll use this to log in and view your leads.</p>
+
+      <label>Phone Number</label>
+      <input type="tel" name="phone" placeholder="(212) 555-0100">
+
+      <label>Address</label>
+      <input type="text" name="address" placeholder="123 Main St, New York, NY 10001">
+
+      <label>Website URL</label>
+      <input type="url" name="website" placeholder="https://sunshinedentalnyc.com">
+
+      <label>Allowed Website Domain <span class="required">*</span></label>
+      <input type="text" name="allowed_domain" placeholder="sunshinedentalnyc.com" required>
+      <p class="hint">The domain where the widget will be embedded (no https://, no www).</p>
+
+      <p class="section-title">What Should the Chatbot Know?</p>
+
+      <label>Hours of Operation</label>
+      <textarea name="hours" placeholder="Mon–Fri 9am–5pm, Sat 9am–1pm, closed Sunday"></textarea>
+
+      <label>Services Offered</label>
+      <textarea name="services" placeholder="General cleanings, fillings, teeth whitening, Invisalign, implants, emergency care..."></textarea>
+
+      <label>Common Questions &amp; Answers</label>
+      <textarea name="faqs" placeholder="Do you accept insurance? Yes, we accept most major plans..."></textarea>
+
+      <label>Anything Else the AI Should Know</label>
+      <textarea name="custom_notes" placeholder="We specialize in anxious patients. Dr. Smith speaks Spanish..."></textarea>
+
+      <button type="submit">Get My Free Chatbot →</button>
     </form>
     <p style="text-align:center;margin-top:24px;font-size:.78rem;color:#94a3b8;">
       By signing up you agree to our
